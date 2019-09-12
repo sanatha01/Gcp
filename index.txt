@@ -1,0 +1,35 @@
+
+/**
+ * Responds to any HTTP request.
+ *
+ * @param {!express:Request} req HTTP request context.
+ * @param {!express:Response} res HTTP response context.
+ */
+
+const {Spanner} = require('@google-cloud/spanner');
+
+exports.helloWorld = async function (req, res){
+  let message = req.query.message || req.body.message || 'Hello World!';
+  res.status(200).send(message);
+  
+  const spanner = new Spanner({
+  projectId: 'verdant-bruin-251003',
+});
+
+  const instance = spanner.instance('my1instance');
+  const database = instance.database('ppoc1');
+  const detailsTable = database.table('details');
+try {
+    await detailsTable.insert([
+    {CustomerId: '101', CustomerName: 'John', age: '28', Country: 'Sweden'},
+    {CustomerId: '102', CustomerName: 'Peter', age: '30', Country: 'Europe'},
+    {CustomerId: '103', CustomerName: 'Marc', age: '40', Country: 'USA'},
+    ]);
+  console.log('Inserted data.');
+} catch (err) {
+  console.error('ERROR:', err);
+} finally {
+  await database.close();
+}
+};
+
